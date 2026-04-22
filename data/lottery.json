@@ -1,14 +1,14 @@
 {
-  "updated_at": "2026-04-22T20:00:00+08:00",
+  "updated_at": "2026-04-22T20:43:00+08:00",
   "periods": [
     {
       "period": "115年1-2月",
       "year_month": "11501",
       "announce_date": "2026-03-25",
       "claim_start": "2026-04-06",
-      "claim_end": "2026-07-06",
-      "source_url": "https://www.dot.gov.tw/singlehtml/ch26?cntId=05224fe1e299445aa4bfe35a5ec428ec",
-      "source_label": "財政部賦稅署公告",
+      "claim_end": "2026-07-05",
+      "source_url": "https://www.etax.nat.gov.tw/etwmain/ETW183W2_11501/",
+      "source_label": "財政部稅務入口網",
       "prizes": {
         "super": {
           "name": "特別獎",
@@ -23,12 +23,12 @@
         "first": {
           "name": "頭獎",
           "amount": 200000,
-          "numbers": ["26649927", "59565539", "11460822"]
+          "numbers": ["21677046", "44662410", "31262513"]
         },
         "sixth_extra": {
           "name": "增開六獎",
           "amount": 200,
-          "numbers": ["927", "539", "822"]
+          "numbers": []
         }
       }
     },
@@ -37,9 +37,9 @@
       "year_month": "11411",
       "announce_date": "2026-01-25",
       "claim_start": "2026-02-06",
-      "claim_end": "2026-05-06",
-      "source_url": "https://www.dot.gov.tw/singlehtml/ch26",
-      "source_label": "財政部賦稅署公告",
+      "claim_end": "2026-05-05",
+      "source_url": "https://www.etax.nat.gov.tw/etwmain/ETW183W2_11411/",
+      "source_label": "財政部稅務入口網",
       "prizes": {
         "super": {
           "name": "特別獎",
@@ -68,9 +68,9 @@
       "year_month": "11409",
       "announce_date": "2025-11-25",
       "claim_start": "2025-12-06",
-      "claim_end": "2026-03-06",
-      "source_url": "https://www.dot.gov.tw/singlehtml/ch26",
-      "source_label": "財政部賦稅署公告",
+      "claim_end": "2026-03-05",
+      "source_url": "https://www.etax.nat.gov.tw/etwmain/ETW183W2_11409/",
+      "source_label": "財政部稅務入口網",
       "prizes": {
         "super": {
           "name": "特別獎",

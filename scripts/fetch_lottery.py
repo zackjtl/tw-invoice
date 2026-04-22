@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 """
 台灣統一發票中獎號碼爬蟲
-從財政部賦稅署網站取得最新三期中獎號碼，更新 data/lottery.json
-每逢雙數月25日開獎，本腳本每月1日執行確保資料最新
+資料來源：財政部稅務入口網 https://www.etax.nat.gov.tw/etwmain/etw183w
+開獎規則：每雙數月 25 日開獎（1-2月、3-4月…11-12月）
+本腳本由 GitHub Actions 每雙數月 26 日 01:00（台灣時間）自動執行
 """
 
 import json
@@ -16,7 +17,6 @@ try:
     import requests
     from bs4 import BeautifulSoup
 except ImportError:
-    print("Installing dependencies...")
     os.system("pip install requests beautifulsoup4 -q")
     import requests
     from bs4 import BeautifulSoup
@@ -24,253 +24,256 @@ except ImportError:
 TW_TZ = timezone(timedelta(hours=8))
 DATA_FILE = Path(__file__).parent.parent / "data" / "lottery.json"
 
-# 財政部賦稅署公告列表
-DOT_GOV_URL = "https://www.dot.gov.tw/singlehtml/ch26"
-INVOS_URL = "https://invos.com.tw/invoice-list"
+# 財政部稅務入口網各期網址格式：ETW183W2_{yyyMM}
+# 例如 115年1-2月 → ETW183W2_11501
+ETAX_LIST_URL = "https://www.etax.nat.gov.tw/etwmain/etw183w"
+ETAX_PERIOD_URL = "https://www.etax.nat.gov.tw/etwmain/ETW183W2_{year_month}/"
 
-def roc_year(western_year: int) -> int:
-    return western_year - 1911
+HEADERS = {
+    "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36"
+}
 
-def parse_invos():
-    """從 invos.com.tw 取得最近三期號碼"""
-    headers = {
-        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36"
-    }
+
+def roc_to_western(roc_year: int) -> int:
+    return roc_year + 1911
+
+
+def current_latest_period() -> tuple[int, int]:
+    """
+    根據當前台灣時間，計算「最新已開獎」的期別。
+    開獎時間表：
+      1-2月 → 開獎日 2月25日（民國年同西元年）
+      3-4月 → 4月25日
+      5-6月 → 6月25日
+      7-8月 → 8月25日
+      9-10月→ 10月25日
+      11-12月→ 12月25日
+
+    回傳 (roc_year, start_month) 例如 (115, 1) 代表 115年1-2月
+    """
+    now = datetime.now(TW_TZ)
+    western_year = now.year
+    month = now.month
+    day = now.day
+
+    roc_year = western_year - 1911
+
+    # 找到最近一個已過的開獎月份（偶數月25日）
+    # 開獎月份：2, 4, 6, 8, 10, 12
+    announce_months = [2, 4, 6, 8, 10, 12]
+
+    latest_start_month = None
+    latest_roc = roc_year
+
+    for am in reversed(announce_months):
+        # 開獎日為 am 月 25 日
+        if month > am or (month == am and day >= 25):
+            # 已過此開獎日
+            latest_start_month = am - 1  # 期別開始月（奇數月）
+            latest_roc = roc_year
+            break
+        if month < am:
+            continue
+
+    if latest_start_month is None:
+        # 今年還未到2月25日，最新期是上一年的11-12月
+        latest_start_month = 11
+        latest_roc = roc_year - 1
+
+    return latest_roc, latest_start_month
+
+
+def period_label(roc_year: int, start_month: int) -> str:
+    end_month = start_month + 1
+    return f"{roc_year}年{start_month}-{end_month}月"
+
+
+def year_month_code(roc_year: int, start_month: int) -> str:
+    """例如 (115, 1) → '11501'"""
+    return f"{roc_year}{start_month:02d}"
+
+
+def announce_date(roc_year: int, start_month: int) -> str:
+    """開獎日 = 結束月 25 日"""
+    western = roc_to_western(roc_year)
+    end_month = start_month + 1
+    return f"{western}-{end_month:02d}-25"
+
+
+def claim_dates(roc_year: int, start_month: int) -> tuple[str, str]:
+    """
+    領獎期間：開獎後第 12 天（約 3月6日）起，領3個月（至 7月5日）
+    簡化計算：claim_start = 開獎月+1 的 06 日，claim_end = 開獎月+4 的 05 日
+    """
+    western = roc_to_western(roc_year)
+    end_month = start_month + 1  # 開獎月
+    claim_start_m = end_month + 1
+    claim_end_m = end_month + 4
+
+    # 跨年處理
+    start_year = western
+    end_year = western
+    if claim_start_m > 12:
+        claim_start_m -= 12
+        start_year += 1
+    if claim_end_m > 12:
+        claim_end_m -= 12
+        end_year += 1
+
+    return (
+        f"{start_year}-{claim_start_m:02d}-06",
+        f"{end_year}-{claim_end_m:02d}-05",
+    )
+
+
+def fetch_period_data(roc_year: int, start_month: int) -> dict | None:
+    """
+    從財政部稅務入口網抓取特定期別的中獎號碼
+    URL 格式：https://www.etax.nat.gov.tw/etwmain/ETW183W2_{yyyMM}/
+    """
+    ym = year_month_code(roc_year, start_month)
+    url = ETAX_PERIOD_URL.format(year_month=ym)
+    source_url = url
+
     try:
-        resp = requests.get(INVOS_URL, headers=headers, timeout=15)
-        resp.raise_for_status()
-        soup = BeautifulSoup(resp.text, "html.parser")
-        text = soup.get_text()
-        
-        periods = []
-        # 搜尋年份期別
-        pattern = re.compile(r'(\d{3})年\s*(\d{1,2}[-–]\d{1,2})月')
-        num_8 = re.compile(r'\b\d{8}\b')
-        num_3 = re.compile(r'\b\d{3}\b')
-        
-        # 簡單解析：回傳 text 讓人工確認
-        print("=== invos.com.tw text snippet ===")
-        print(text[:3000])
-        return []
-    except Exception as e:
-        print(f"Error fetching invos: {e}")
-        return []
-
-def parse_dot_gov():
-    """從財政部賦稅署取得最新一期號碼"""
-    headers = {
-        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36"
-    }
-    try:
-        resp = requests.get(DOT_GOV_URL, headers=headers, timeout=15)
+        resp = requests.get(url, headers=HEADERS, timeout=20)
         resp.raise_for_status()
         soup = BeautifulSoup(resp.text, "html.parser")
         text = soup.get_text(separator="\n")
-        
-        print("=== dot.gov.tw text snippet ===")
-        # 找最新公告
-        for link in soup.find_all("a"):
-            href = link.get("href", "")
-            title = link.get_text(strip=True)
-            if "中獎" in title and "統一發票" in title:
-                print(f"  {title}: {href}")
-        return []
-    except Exception as e:
-        print(f"Error fetching dot.gov: {e}")
-        return []
 
-def fetch_period(roc_year_month: str) -> dict | None:
-    """
-    使用財政部電子發票 API 取得特定期別號碼
-    roc_year_month: 民國年月，如 "11501" 表示115年1月(即1-2月期)
-    
-    注意：官方 API 需要 appID，這裡嘗試無驗證版本
-    """
-    url = "https://invoice.etax.nat.gov.tw/index.html"
-    # 實際上財政部有公開的發票號碼頁面
-    try:
-        resp = requests.get(url, timeout=15)
-        print(f"invoice.etax status: {resp.status_code}")
-    except Exception as e:
-        print(f"Error: {e}")
-    return None
+        # 找 8 碼號碼
+        nums_8 = re.findall(r'\b(\d{8})\b', text)
+        # 找 3 碼增開六獎（通常在「增開六獎」附近）
+        nums_3 = []
 
-def get_latest_from_etax():
-    """從財政部電子發票整合服務平台取得最新號碼"""
-    # 此 API 端點為公開資訊，無需 appID
-    # 使用 etax.nat.gov.tw 公開頁面
-    urls_to_try = [
-        "https://invoice.etax.nat.gov.tw/index.html",
-        "https://www.etax.nat.gov.tw/etwmain/front/ETW118W/VIEW/",
-    ]
-    headers = {
-        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
-    }
-    for url in urls_to_try:
-        try:
-            resp = requests.get(url, headers=headers, timeout=15)
-            print(f"Status {url}: {resp.status_code}")
-            if resp.status_code == 200:
-                soup = BeautifulSoup(resp.text, "html.parser")
-                text = soup.get_text(separator="\n")
-                # 找8碼號碼
-                numbers = re.findall(r'\b\d{8}\b', text)
-                print(f"Found 8-digit numbers: {numbers[:20]}")
-                print("Text snippet:", text[:2000])
-        except Exception as e:
-            print(f"Error {url}: {e}")
+        # 嘗試用結構化方式解析表格
+        super_no = None
+        special_no = None
+        first_nos = []
+        extra_nos = []
 
-def build_periods_from_known_data():
-    """
-    使用已知的最近三期資料建立 JSON
-    資料來源：invos.com.tw 及財政部公告
-    增開六獎號碼來自頭獎末3碼
-    """
-    now = datetime.now(TW_TZ)
-    
-    periods = [
-        {
-            "period": "115年1-2月",
-            "year_month": "11501",
-            "announce_date": "2026-03-25",
-            "claim_start": "2026-04-06",
-            "claim_end": "2026-07-06",
+        lines = [l.strip() for l in text.split('\n') if l.strip()]
+        for i, line in enumerate(lines):
+            context = ' '.join(lines[max(0, i-2):i+3])
+            found_8 = re.findall(r'\b(\d{8})\b', context)
+            found_3 = re.findall(r'\b(\d{3})\b', line)
+
+            if '特別獎' in line and found_8:
+                super_no = found_8[0]
+            elif '特獎' in line and not '特別' in line and found_8:
+                if not special_no:
+                    special_no = found_8[0]
+            elif '頭獎' in line and found_8:
+                first_nos.extend(found_8)
+            elif '增開' in line:
+                # 增開六獎是3碼
+                e3 = re.findall(r'\b(\d{3})\b', ' '.join(lines[i:i+5]))
+                if e3:
+                    extra_nos = e3[:6]
+
+        # fallback：從所有 8 碼號碼依序判斷
+        if not super_no and len(nums_8) >= 1:
+            super_no = nums_8[0]
+        if not special_no and len(nums_8) >= 2:
+            special_no = nums_8[1]
+        if not first_nos and len(nums_8) >= 3:
+            first_nos = nums_8[2:5]
+
+        if not super_no or not special_no or not first_nos:
+            print(f"⚠️  {ym} 解析不完整：super={super_no}, special={special_no}, first={first_nos}")
+            return None
+
+        # 若無增開六獎資料，預設為空
+        if not extra_nos:
+            extra_nos = []
+
+        claim_start, claim_end = claim_dates(roc_year, start_month)
+
+        return {
+            "period": period_label(roc_year, start_month),
+            "year_month": ym,
+            "announce_date": announce_date(roc_year, start_month),
+            "claim_start": claim_start,
+            "claim_end": claim_end,
+            "source_url": source_url,
+            "source_label": "財政部稅務入口網",
             "prizes": {
-                "super": {"name": "特別獎", "amount": 10000000, "numbers": ["87510041"]},
-                "special": {"name": "特獎", "amount": 2000000, "numbers": ["32220522"]},
-                "first": {"name": "頭獎", "amount": 200000, "numbers": ["26649927", "59565539", "11460822"]},
-                "sixth_extra": {"name": "增開六獎", "amount": 200, "numbers": ["927", "539", "822"]}
-            }
-        },
-        {
-            "period": "114年11-12月",
-            "year_month": "11411",
-            "announce_date": "2026-01-25",
-            "claim_start": "2026-02-06",
-            "claim_end": "2026-05-06",
-            "prizes": {
-                "super": {"name": "特別獎", "amount": 10000000, "numbers": ["97023797"]},
-                "special": {"name": "特獎", "amount": 2000000, "numbers": ["00507588"]},
-                "first": {"name": "頭獎", "amount": 200000, "numbers": ["92377231", "05232592", "78125249"]},
-                "sixth_extra": {"name": "增開六獎", "amount": 200, "numbers": ["231", "592", "249"]}
-            }
-        },
-        {
-            "period": "114年9-10月",
-            "year_month": "11409",
-            "announce_date": "2025-11-25",
-            "claim_start": "2025-12-06",
-            "claim_end": "2026-03-06",
-            "prizes": {
-                "super": {"name": "特別獎", "amount": 10000000, "numbers": ["28630525"]},
-                "special": {"name": "特獎", "amount": 2000000, "numbers": ["90028580"]},
-                "first": {"name": "頭獎", "amount": 200000, "numbers": ["41016094", "98081574", "07309261"]},
-                "sixth_extra": {"name": "增開六獎", "amount": 200, "numbers": ["094", "574", "261"]}
+                "super":       {"name": "特別獎", "amount": 10000000, "numbers": [super_no]},
+                "special":     {"name": "特獎",   "amount": 2000000,  "numbers": [special_no]},
+                "first":       {"name": "頭獎",   "amount": 200000,   "numbers": list(dict.fromkeys(first_nos))[:3]},
+                "sixth_extra": {"name": "增開六獎","amount": 200,      "numbers": extra_nos},
             }
         }
+
+    except Exception as e:
+        print(f"❌ 抓取 {ym} 失敗：{e}")
+        return None
+
+
+def prev_period(roc_year: int, start_month: int) -> tuple[int, int]:
+    """計算上一期"""
+    if start_month == 1:
+        return roc_year - 1, 11
+    return roc_year, start_month - 2
+
+
+def scrape_latest():
+    """抓取最近三期資料並更新 lottery.json"""
+    now = datetime.now(TW_TZ)
+
+    # 計算最近三期
+    latest_roc, latest_sm = current_latest_period()
+    p2_roc, p2_sm = prev_period(latest_roc, latest_sm)
+    p3_roc, p3_sm = prev_period(p2_roc, p2_sm)
+
+    target_periods = [
+        (latest_roc, latest_sm),
+        (p2_roc, p2_sm),
+        (p3_roc, p3_sm),
     ]
-    
-    data = {
+
+    print(f"📅 當前台灣時間：{now.strftime('%Y-%m-%d %H:%M')} (UTC+8)")
+    print(f"📋 計算最新三期：{[period_label(r, m) for r, m in target_periods]}")
+
+    # 讀取現有資料作為備份
+    existing = {}
+    if DATA_FILE.exists():
+        try:
+            old = json.loads(DATA_FILE.read_text(encoding="utf-8"))
+            for p in old.get("periods", []):
+                existing[p["year_month"]] = p
+        except Exception:
+            pass
+
+    periods = []
+    for roc_y, sm in target_periods:
+        ym = year_month_code(roc_y, sm)
+        print(f"\n🔍 抓取 {period_label(roc_y, sm)}（{ym}）...")
+
+        data = fetch_period_data(roc_y, sm)
+        if data:
+            print(f"  ✅ 特別獎：{data['prizes']['super']['numbers'][0]}")
+            print(f"  ✅ 特獎：{data['prizes']['special']['numbers'][0]}")
+            print(f"  ✅ 頭獎：{data['prizes']['first']['numbers']}")
+            periods.append(data)
+        elif ym in existing:
+            print(f"  ⚠️  抓取失敗，使用快取資料")
+            periods.append(existing[ym])
+        else:
+            print(f"  ❌ 無法取得資料，跳過")
+
+    if not periods:
+        print("❌ 完全無法取得資料，保留原有 JSON")
+        return
+
+    output = {
         "updated_at": now.isoformat(),
         "periods": periods
     }
-    
-    DATA_FILE.write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
-    print(f"✅ 已更新 {DATA_FILE}，共 {len(periods)} 期資料")
-    return data
 
-def scrape_latest():
-    """
-    主函數：嘗試從網路取得最新資料，失敗則保留現有 JSON
-    實際上採用爬取 invos.com.tw 的方式取得最新期別
-    """
-    headers = {
-        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36"
-    }
-    
-    print("📡 正在從 invos.com.tw 取得最新中獎號碼...")
-    
-    try:
-        resp = requests.get(INVOS_URL, headers=headers, timeout=20)
-        resp.raise_for_status()
-        soup = BeautifulSoup(resp.text, "html.parser")
-        text = soup.get_text(separator="\n")
-        
-        # 讀取現有資料作為備份
-        existing = json.loads(DATA_FILE.read_text(encoding="utf-8")) if DATA_FILE.exists() else {"periods": []}
-        
-        # 解析期別與號碼
-        # 格式: "114年 統一發票 11 12 月" or "115年1-2月"
-        period_pattern = re.compile(r'(\d{3})年\s*(\d{1,2})[-–\s]+(\d{1,2})\s*月')
-        number_8_pattern = re.compile(r'\b(\d{8})\b')
-        number_3_pattern = re.compile(r'\b(\d{3})\b')
-        
-        lines = [l.strip() for l in text.split("\n") if l.strip()]
-        
-        periods_found = []
-        i = 0
-        while i < len(lines) and len(periods_found) < 3:
-            line = lines[i]
-            m = period_pattern.search(line)
-            if m:
-                roc_y, m_start, m_end = m.group(1), m.group(2), m.group(3)
-                period_label = f"{roc_y}年{m_start}-{m_end}月"
-                year_month = f"{roc_y}{int(m_start):02d}"
-                
-                # 往後找號碼
-                super_no = special_no = None
-                first_nos = []
-                j = i + 1
-                while j < min(i + 30, len(lines)):
-                    nums_8 = number_8_pattern.findall(lines[j])
-                    if nums_8:
-                        if "特別獎" in lines[j] or (super_no is None and not special_no and not first_nos):
-                            super_no = nums_8[0]
-                        elif "特獎" in lines[j] or (super_no and not special_no):
-                            special_no = nums_8[0]
-                        elif "頭獎" in lines[j] or special_no:
-                            first_nos.extend(nums_8)
-                    j += 1
-                
-                if super_no and special_no and first_nos:
-                    # 增開六獎 = 頭獎末3碼
-                    sixth_extra = list({n[-3:] for n in first_nos})
-                    periods_found.append({
-                        "period": period_label,
-                        "year_month": year_month,
-                        "prizes": {
-                            "super": {"name": "特別獎", "amount": 10000000, "numbers": [super_no]},
-                            "special": {"name": "特獎", "amount": 2000000, "numbers": [special_no]},
-                            "first": {"name": "頭獎", "amount": 200000, "numbers": first_nos[:3]},
-                            "sixth_extra": {"name": "增開六獎", "amount": 200, "numbers": sixth_extra}
-                        }
-                    })
-            i += 1
-        
-        if len(periods_found) >= 2:
-            # 計算領獎日期
-            for p in periods_found:
-                # 估算開獎日與領獎期
-                ym = p["year_month"]
-                roc_y = int(ym[:3])
-                month = int(ym[3:])
-                announce_western = 1911 + roc_y
-                p["announce_date"] = f"{announce_western}-{month+1:02d}-25"
-                p["claim_start"] = f"{announce_western}-{month+2:02d}-06" if month < 11 else f"{announce_western+1}-01-06"
-                p["claim_end"] = f"{announce_western}-{month+5:02d}-06" if month < 9 else f"{announce_western+1}-{month-6:02d}-06"
-            
-            now = datetime.now(TW_TZ)
-            data = {"updated_at": now.isoformat(), "periods": periods_found[:3]}
-            DATA_FILE.write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
-            print(f"✅ 成功更新 {len(periods_found)} 期資料")
-        else:
-            print(f"⚠️  只找到 {len(periods_found)} 期，保留現有資料")
-            
-    except Exception as e:
-        print(f"❌ 爬取失敗: {e}，保留現有資料")
+    DATA_FILE.write_text(json.dumps(output, ensure_ascii=False, indent=2), encoding="utf-8")
+    print(f"\n✅ 已更新 {DATA_FILE}，共 {len(periods)} 期")
+
 
 if __name__ == "__main__":
-    if "--build" in sys.argv:
-        build_periods_from_known_data()
-    else:
-        scrape_latest()
+    scrape_latest()
