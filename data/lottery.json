@@ -59,7 +59,7 @@
         "sixth_extra": {
           "name": "增開六獎",
           "amount": 200,
-          "numbers": ["231", "592", "249"]
+          "numbers": []
         }
       }
     },
@@ -90,7 +90,7 @@
         "sixth_extra": {
           "name": "增開六獎",
           "amount": 200,
-          "numbers": ["094", "574", "261"]
+          "numbers": []
         }
       }
     }
