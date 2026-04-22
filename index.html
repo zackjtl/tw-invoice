@@ -758,15 +758,15 @@
         </svg>
         快速對獎
       </h2>
-      <p class="check-desc">輸入你的發票末8碼（英文字軌不用輸），自動比對最新一期所有獎項</p>
+      <p class="check-desc">輸入發票末 3–8 碼（英文字軌不用輸），自動比對最近三期所有獎項；輸入 3 碼可查六獎</p>
       <div class="input-row">
         <input
           type="text"
           class="invoice-input"
           id="invoice-number"
-          placeholder="例：12345678"
+          placeholder="末3碼～8碼，例：678 或 12345678"
           maxlength="8"
-          pattern="[0-9]{8}"
+          pattern="[0-9]{3,8}"
           inputmode="numeric"
           autocomplete="off"
         />
@@ -1047,12 +1047,86 @@ async function loadData() {
 }
 
 // ── Invoice Check ──
+function checkOnePeriod(input, period) {
+  // Returns the best matching win result for this period, or null.
+  // input may be 3–8 digits (already sanitised).
+  const len = input.length;
+  const { prizes } = period;
+  const s  = prizes.super?.numbers  || [];
+  const sp = prizes.special?.numbers || [];
+  const f  = prizes.first?.numbers  || [];
+  const ex = prizes.sixth_extra?.numbers || [];
+
+  // 特別獎 / 特獎 / 頭獎 require full 8-digit match
+  if (len === 8) {
+    if (s.includes(input))  return { prize: '特別獎', amount: '1,000萬元', detail: '8碼完全符合特別獎' };
+    if (sp.includes(input)) return { prize: '特獎',   amount: '200萬元',   detail: '8碼完全符合特獎' };
+    for (const fn of f) {
+      if (input === fn)                         return { prize: '頭獎', amount: '20萬元',  detail: `符合頭獎 ${fn}` };
+      if (input.slice(-7) === fn.slice(-7))     return { prize: '二獎', amount: '4萬元',   detail: `末7碼符合頭獎 ${fn}` };
+      if (input.slice(-6) === fn.slice(-6))     return { prize: '三獎', amount: '1萬元',   detail: `末6碼符合頭獎 ${fn}` };
+      if (input.slice(-5) === fn.slice(-5))     return { prize: '四獎', amount: '4,000元', detail: `末5碼符合頭獎 ${fn}` };
+      if (input.slice(-4) === fn.slice(-4))     return { prize: '五獎', amount: '1,000元', detail: `末4碼符合頭獎 ${fn}` };
+      if (input.slice(-3) === fn.slice(-3))     return { prize: '六獎', amount: '200元',   detail: `末3碼符合頭獎 ${fn}` };
+    }
+    for (const en of ex) {
+      if (input.slice(-3) === en) return { prize: '增開六獎', amount: '200元', detail: `末3碼 ${en} 符合增開六獎` };
+    }
+  } else if (len === 7) {
+    for (const fn of f) {
+      if (input === fn.slice(-7))               return { prize: '二獎', amount: '4萬元',   detail: `末7碼符合頭獎 ${fn}` };
+      if (input.slice(-6) === fn.slice(-6))     return { prize: '三獎', amount: '1萬元',   detail: `末6碼符合頭獎 ${fn}` };
+      if (input.slice(-5) === fn.slice(-5))     return { prize: '四獎', amount: '4,000元', detail: `末5碼符合頭獎 ${fn}` };
+      if (input.slice(-4) === fn.slice(-4))     return { prize: '五獎', amount: '1,000元', detail: `末4碼符合頭獎 ${fn}` };
+      if (input.slice(-3) === fn.slice(-3))     return { prize: '六獎', amount: '200元',   detail: `末3碼符合頭獎 ${fn}` };
+    }
+    for (const en of ex) {
+      if (input.slice(-3) === en) return { prize: '增開六獎', amount: '200元', detail: `末3碼 ${en} 符合增開六獎` };
+    }
+  } else if (len === 6) {
+    for (const fn of f) {
+      if (input === fn.slice(-6))               return { prize: '三獎', amount: '1萬元',   detail: `末6碼符合頭獎 ${fn}` };
+      if (input.slice(-5) === fn.slice(-5))     return { prize: '四獎', amount: '4,000元', detail: `末5碼符合頭獎 ${fn}` };
+      if (input.slice(-4) === fn.slice(-4))     return { prize: '五獎', amount: '1,000元', detail: `末4碼符合頭獎 ${fn}` };
+      if (input.slice(-3) === fn.slice(-3))     return { prize: '六獎', amount: '200元',   detail: `末3碼符合頭獎 ${fn}` };
+    }
+    for (const en of ex) {
+      if (input.slice(-3) === en) return { prize: '增開六獎', amount: '200元', detail: `末3碼 ${en} 符合增開六獎` };
+    }
+  } else if (len === 5) {
+    for (const fn of f) {
+      if (input === fn.slice(-5))               return { prize: '四獎', amount: '4,000元', detail: `末5碼符合頭獎 ${fn}` };
+      if (input.slice(-4) === fn.slice(-4))     return { prize: '五獎', amount: '1,000元', detail: `末4碼符合頭獎 ${fn}` };
+      if (input.slice(-3) === fn.slice(-3))     return { prize: '六獎', amount: '200元',   detail: `末3碼符合頭獎 ${fn}` };
+    }
+    for (const en of ex) {
+      if (input.slice(-3) === en) return { prize: '增開六獎', amount: '200元', detail: `末3碼 ${en} 符合增開六獎` };
+    }
+  } else if (len === 4) {
+    for (const fn of f) {
+      if (input === fn.slice(-4))               return { prize: '五獎', amount: '1,000元', detail: `末4碼符合頭獎 ${fn}` };
+      if (input.slice(-3) === fn.slice(-3))     return { prize: '六獎', amount: '200元',   detail: `末3碼符合頭獎 ${fn}` };
+    }
+    for (const en of ex) {
+      if (input.slice(-3) === en) return { prize: '增開六獎', amount: '200元', detail: `末3碼 ${en} 符合增開六獎` };
+    }
+  } else if (len === 3) {
+    for (const fn of f) {
+      if (input === fn.slice(-3)) return { prize: '六獎', amount: '200元', detail: `末3碼符合頭獎 ${fn}` };
+    }
+    for (const en of ex) {
+      if (input === en) return { prize: '增開六獎', amount: '200元', detail: `末3碼 ${en} 符合增開六獎` };
+    }
+  }
+  return null;
+}
+
 function checkInvoice() {
   const input = document.getElementById('invoice-number').value.trim().replace(/[^0-9]/g, '');
   const resultEl = document.getElementById('check-result');
 
-  if (input.length !== 8) {
-    resultEl.innerHTML = `<div class="result-card error"><span class="result-icon">⚠️</span><div class="result-body"><div class="result-prize nowin">請輸入正確的8位數字</div><div class="result-detail">發票號碼末8碼為純數字，例如：12345678</div></div></div>`;
+  if (input.length < 3 || input.length > 8) {
+    resultEl.innerHTML = `<div class="result-card error"><span class="result-icon">⚠️</span><div class="result-body"><div class="result-prize nowin">請輸入 3 到 8 位數字</div><div class="result-detail">例：輸入末 3 碼查六獎，或完整末 8 碼查所有獎項</div></div></div>`;
     resultEl.classList.add('visible');
     return;
   }
@@ -1062,56 +1136,33 @@ function checkInvoice() {
     return;
   }
 
-  // Check latest period only
-  const period = lotteryData.periods[0];
-  const { prizes } = period;
-  let winResult = null;
-
-  const s = prizes.super?.numbers || [];
-  const sp = prizes.special?.numbers || [];
-  const f = prizes.first?.numbers || [];
-  const ex = prizes.sixth_extra?.numbers || [];
-
-  if (s.includes(input)) {
-    winResult = { prize: '特別獎', amount: '1,000萬元', detail: '恭喜！8碼完全符合特別獎！' };
-  } else if (sp.includes(input)) {
-    winResult = { prize: '特獎', amount: '200萬元', detail: '恭喜！8碼完全符合特獎！' };
-  } else {
-    for (const fn of f) {
-      if (input === fn) { winResult = { prize: '頭獎', amount: '20萬元', detail: `符合頭獎號碼 ${fn}` }; break; }
-      if (input.slice(-7) === fn.slice(-7)) { winResult = { prize: '二獎', amount: '4萬元', detail: `末7碼符合頭獎 ${fn}` }; break; }
-      if (input.slice(-6) === fn.slice(-6)) { winResult = { prize: '三獎', amount: '1萬元', detail: `末6碼符合頭獎 ${fn}` }; break; }
-      if (input.slice(-5) === fn.slice(-5)) { winResult = { prize: '四獎', amount: '4,000元', detail: `末5碼符合頭獎 ${fn}` }; break; }
-      if (input.slice(-4) === fn.slice(-4)) { winResult = { prize: '五獎', amount: '1,000元', detail: `末4碼符合頭獎 ${fn}` }; break; }
-      if (input.slice(-3) === fn.slice(-3)) { winResult = { prize: '六獎', amount: '200元', detail: `末3碼符合頭獎 ${fn}` }; break; }
-    }
-    if (!winResult) {
-      for (const en of ex) {
-        if (input.slice(-3) === en) {
-          winResult = { prize: '增開六獎', amount: '200元', detail: `末3碼 ${en} 符合增開六獎` };
-          break;
-        }
-      }
-    }
+  // Check all three periods, collect every match
+  const hits = [];
+  for (const period of lotteryData.periods) {
+    const result = checkOnePeriod(input, period);
+    if (result) hits.push({ period, result });
   }
 
-  if (winResult) {
-    resultEl.innerHTML = `
-      <div class="result-card win">
+  if (hits.length > 0) {
+    const cards = hits.map(({ period, result }) => `
+      <div class="result-card win" style="margin-bottom:0.5rem;">
         <span class="result-icon">🎉</span>
         <div class="result-body">
-          <div class="result-prize">恭喜中獎！${winResult.prize} ${winResult.amount}</div>
-          <div class="result-detail">${winResult.detail}（${period.period}）</div>
+          <div class="result-prize">恭喜！${result.prize} ${result.amount}</div>
+          <div class="result-detail">${result.detail}（${period.period}）</div>
           ${period.claim_end ? `<div class="result-detail" style="margin-top:4px;">領獎截止：${formatDate(period.claim_end)}</div>` : ''}
         </div>
-      </div>`;
+      </div>`).join('');
+    const hint = hits.length > 1 ? `<div class="result-detail" style="color:var(--accent);margin-bottom:0.5rem;">此號碼在 ${hits.length} 期中均可能中獎，請核對發票日期！</div>` : '';
+    resultEl.innerHTML = hint + cards;
   } else {
+    const periodRange = lotteryData.periods.map(p => p.period).join('、');
     resultEl.innerHTML = `
       <div class="result-card nowin">
         <span class="result-icon">😔</span>
         <div class="result-body">
-          <div class="result-prize nowin">未中獎（${period.period}）</div>
-          <div class="result-detail">此號碼在最新一期未符合任何獎項，別氣餒！</div>
+          <div class="result-prize nowin">未中獎</div>
+          <div class="result-detail">已比對 ${periodRange}，此號碼未符合任何獎項，別氣餒！</div>
         </div>
       </div>`;
   }
@@ -1121,8 +1172,8 @@ function checkInvoice() {
 // Enter key support
 document.getElementById('invoice-number').addEventListener('keydown', e => {
   if (e.key === 'Enter') checkInvoice();
-  // Only allow digits
-  if (!/[0-9]|Backspace|Tab|ArrowLeft|ArrowRight|Delete/.test(e.key)) e.preventDefault();
+  // Only allow digits and control keys
+  if (!/^[0-9]$|^(Backspace|Tab|ArrowLeft|ArrowRight|Delete|Home|End)$/.test(e.key)) e.preventDefault();
 });
 
 // Load data on page ready
