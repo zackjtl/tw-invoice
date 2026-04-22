@@ -1169,6 +1169,13 @@ function checkInvoice() {
   resultEl.classList.add('visible');
 }
 
+// Clear result on re-focus
+document.getElementById('invoice-number').addEventListener('focus', () => {
+  const resultEl = document.getElementById('check-result');
+  resultEl.classList.remove('visible');
+  resultEl.innerHTML = '';
+});
+
 // Enter key support
 document.getElementById('invoice-number').addEventListener('keydown', e => {
   if (e.key === 'Enter') checkInvoice();
