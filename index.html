@@ -1169,11 +1169,9 @@ function checkInvoice() {
   resultEl.classList.add('visible');
 }
 
-// Clear result on re-focus
+// Select all text on focus so new input replaces it immediately
 document.getElementById('invoice-number').addEventListener('focus', () => {
-  const resultEl = document.getElementById('check-result');
-  resultEl.classList.remove('visible');
-  resultEl.innerHTML = '';
+  document.getElementById('invoice-number').select();
 });
 
 // Enter key support
