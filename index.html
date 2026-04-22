@@ -281,26 +281,71 @@
       display: flex;
       gap: var(--space-3);
       flex-wrap: wrap;
+      align-items: center;
     }
-    .invoice-input {
+    /* Tag-style input wrapper */
+    .tag-input-wrap {
       flex: 1;
       min-width: 180px;
-      padding: var(--space-3) var(--space-4);
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+      padding: var(--space-2) var(--space-3);
+      border: 2px solid var(--border);
+      border-radius: var(--radius-md);
+      background: var(--bg);
+      cursor: text;
+      transition: border-color var(--transition), box-shadow var(--transition);
+      min-height: 48px;
+    }
+    .tag-input-wrap:focus-within {
+      border-color: var(--accent);
+      background: var(--surface);
+      box-shadow: 0 0 0 3px var(--accent-glow);
+    }
+    .number-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-1);
+      background: var(--accent);
+      color: var(--ink);
+      font-family: 'Courier New', monospace;
+      font-size: var(--text-base);
+      font-weight: 800;
+      letter-spacing: 0.15em;
+      padding: 2px var(--space-3);
+      border-radius: var(--radius-sm);
+      white-space: nowrap;
+      user-select: none;
+    }
+    .number-tag .tag-clear {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: rgba(13,17,23,0.2);
+      font-size: 11px;
+      line-height: 1;
+      cursor: pointer;
+      transition: background 0.15s;
+      flex-shrink: 0;
+    }
+    .number-tag .tag-clear:hover { background: rgba(13,17,23,0.4); }
+    .invoice-input {
+      flex: 1;
+      min-width: 80px;
+      padding: var(--space-1) var(--space-2);
       font-size: var(--text-base);
       font-family: 'Courier New', monospace;
       letter-spacing: 0.15em;
       font-weight: 700;
-      border: 2px solid var(--border);
-      border-radius: var(--radius-md);
-      background: var(--bg);
+      border: none;
+      border-radius: 0;
+      background: transparent;
       color: var(--text);
-      text-transform: uppercase;
-    }
-    .invoice-input:focus {
       outline: none;
-      border-color: var(--accent);
-      background: var(--surface);
-      box-shadow: 0 0 0 3px var(--accent-glow);
     }
     .invoice-input::placeholder {
       color: var(--text-faint);
@@ -693,6 +738,7 @@
       .updated-badge { display: none; }
       .logo-subtitle { display: none; }
       .input-row { flex-direction: column; }
+      .tag-input-wrap { width: 100%; }
       .check-btn { width: 100%; justify-content: center; display: flex; }
     }
   </style>
@@ -760,16 +806,19 @@
       </h2>
       <p class="check-desc">輸入發票末 3–8 碼（英文字軌不用輸），自動比對最近三期所有獎項；輸入 3 碼可查六獎</p>
       <div class="input-row">
-        <input
-          type="text"
-          class="invoice-input"
-          id="invoice-number"
-          placeholder="末3碼～8碼，例：678 或 12345678"
-          maxlength="8"
-          pattern="[0-9]{3,8}"
-          inputmode="numeric"
-          autocomplete="off"
-        />
+        <div class="tag-input-wrap" id="tag-input-wrap" onclick="document.getElementById('invoice-number').focus()">
+          <span id="number-tag-slot"></span>
+          <input
+            type="text"
+            class="invoice-input"
+            id="invoice-number"
+            placeholder="末3碼～8碼，例：678 或 12345678"
+            maxlength="8"
+            pattern="[0-9]{3,8}"
+            inputmode="numeric"
+            autocomplete="off"
+          />
+        </div>
         <button class="check-btn" id="check-btn" onclick="checkInvoice()">對獎</button>
       </div>
       <div class="check-result" id="check-result"></div>
@@ -1169,14 +1218,52 @@ function checkInvoice() {
   resultEl.classList.add('visible');
 }
 
-// Select all text on focus so new input replaces it immediately
-document.getElementById('invoice-number').addEventListener('focus', () => {
-  document.getElementById('invoice-number').select();
-});
+// ── Tag input logic ──
+const invoiceInput = document.getElementById('invoice-number');
+const tagSlot      = document.getElementById('number-tag-slot');
+const resultEl2    = document.getElementById('check-result');
 
-// Enter key support
-document.getElementById('invoice-number').addEventListener('keydown', e => {
-  if (e.key === 'Enter') checkInvoice();
+function clearTag() {
+  tagSlot.innerHTML = '';
+  invoiceInput.placeholder = '末3碼～8碼，例：678 或 12345678';
+  invoiceInput.value = '';
+  invoiceInput.style.display = '';
+  resultEl2.classList.remove('visible');
+  resultEl2.innerHTML = '';
+  invoiceInput.focus();
+}
+
+function commitTag() {
+  const val = invoiceInput.value.trim().replace(/[^0-9]/g, '');
+  if (val.length < 3) return; // too short, don't commit
+  // Build tag
+  tagSlot.innerHTML = `
+    <span class="number-tag">
+      ${val}
+      <span class="tag-clear" title="清除" onclick="clearTag()">×</span>
+    </span>`;
+  invoiceInput.style.display = 'none';
+  invoiceInput.value = val; // keep value for checkInvoice to read
+}
+
+invoiceInput.addEventListener('keydown', e => {
+  if (e.key === 'Enter') {
+    const val = invoiceInput.value.trim().replace(/[^0-9]/g, '');
+    if (val.length >= 3) {
+      commitTag();
+      checkInvoice();
+    } else {
+      checkInvoice(); // will show error
+    }
+    e.preventDefault();
+    return;
+  }
+  // Backspace on empty input => clear tag if present
+  if (e.key === 'Backspace' && invoiceInput.value === '' && tagSlot.innerHTML !== '') {
+    clearTag();
+    e.preventDefault();
+    return;
+  }
   // Only allow digits and control keys
   if (!/^[0-9]$|^(Backspace|Tab|ArrowLeft|ArrowRight|Delete|Home|End)$/.test(e.key)) e.preventDefault();
 });
