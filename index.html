@@ -1268,6 +1268,26 @@ invoiceInput.addEventListener('keydown', e => {
   if (!/^[0-9]$|^(Backspace|Tab|ArrowLeft|ArrowRight|Delete|Home|End)$/.test(e.key)) e.preventDefault();
 });
 
+// Global Backspace: clear tag from anywhere on the page
+document.addEventListener('keydown', e => {
+  if (e.key !== 'Backspace') return;
+  // Ignore if user is typing inside any other input/textarea/contenteditable
+  const active = document.activeElement;
+  const isTyping = active && (
+    (active.tagName === 'INPUT' && active !== invoiceInput) ||
+    active.tagName === 'TEXTAREA' ||
+    active.isContentEditable
+  );
+  if (isTyping) return;
+  // If the invoice input itself is focused, let its own handler deal with it
+  if (active === invoiceInput) return;
+  // Otherwise: if a tag exists, clear it
+  if (tagSlot.innerHTML !== '') {
+    e.preventDefault();
+    clearTag();
+  }
+});
+
 // Load data on page ready
 loadData();
 </script>
