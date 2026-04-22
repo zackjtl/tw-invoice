@@ -1,0 +1,46 @@
+name: Update Invoice Lottery Numbers
+
+on:
+  # 每雙數月26日凌晨1點 (UTC+8) 執行，確保25日開獎後更新
+  # UTC 時間 = 17:00 UTC (= 次日 01:00 台灣時間)
+  schedule:
+    - cron: '0 17 26 2,4,6,8,10,12 *'
+
+  # 允許手動觸發
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  update-data:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install requests beautifulsoup4
+
+      - name: Run fetch script
+        run: python scripts/fetch_lottery.py
+
+      - name: Check for changes
+        id: changes
+        run: |
+          git diff --quiet data/lottery.json || echo "changed=true" >> $GITHUB_OUTPUT
+
+      - name: Commit and push updated data
+        if: steps.changes.outputs.changed == 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add data/lottery.json
+          git commit -m "chore: update lottery numbers $(date +'%Y-%m-%d')"
+          git push

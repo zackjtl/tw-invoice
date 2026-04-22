@@ -1,0 +1,1077 @@
+<!DOCTYPE html>
+<html lang="zh-TW" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>統一發票中獎號碼查詢</title>
+  <meta name="description" content="台灣統一發票最近三期中獎號碼，快速對獎查詢入口" />
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&family=Noto+Serif+TC:wght@700;900&display=swap" rel="stylesheet" />
+
+  <style>
+    /* ── Design Tokens ── */
+    :root {
+      --red-deep:    #9B1C1C;
+      --red-main:    #C62828;
+      --red-bright:  #E53935;
+      --red-soft:    #FFCDD2;
+      --gold-main:   #D4A017;
+      --gold-light:  #F5E6A3;
+      --gold-dark:   #7C5A00;
+
+      --bg:          #FFF9F7;
+      --surface:     #FFFFFF;
+      --surface-2:   #FFF3F0;
+      --border:      #F0D0C8;
+      --divider:     #F5DDD8;
+
+      --text:        #1A0A08;
+      --text-muted:  #7A4040;
+      --text-faint:  #B09090;
+      --text-inv:    #FFF9F7;
+
+      --shadow-sm: 0 1px 3px oklch(0.2 0.05 20 / 0.08);
+      --shadow-md: 0 4px 16px oklch(0.2 0.05 20 / 0.10);
+      --shadow-lg: 0 12px 40px oklch(0.2 0.05 20 / 0.14);
+
+      --radius-sm: 0.375rem;
+      --radius-md: 0.625rem;
+      --radius-lg: 1rem;
+      --radius-xl: 1.5rem;
+
+      --transition: 180ms cubic-bezier(0.16, 1, 0.3, 1);
+
+      --font-display: 'Noto Serif TC', 'Georgia', serif;
+      --font-body:    'Noto Sans TC', 'PingFang TC', 'Microsoft JhengHei', sans-serif;
+
+      --text-xs:   clamp(0.75rem,  0.7rem  + 0.25vw, 0.875rem);
+      --text-sm:   clamp(0.875rem, 0.8rem  + 0.35vw, 1rem);
+      --text-base: clamp(1rem,     0.95rem + 0.25vw, 1.125rem);
+      --text-lg:   clamp(1.125rem, 1rem    + 0.75vw, 1.5rem);
+      --text-xl:   clamp(1.5rem,   1.2rem  + 1.25vw, 2.25rem);
+      --text-2xl:  clamp(2rem,     1.2rem  + 2.5vw,  3.5rem);
+
+      --space-1: 0.25rem; --space-2: 0.5rem;  --space-3: 0.75rem;
+      --space-4: 1rem;    --space-5: 1.25rem; --space-6: 1.5rem;
+      --space-8: 2rem;    --space-10: 2.5rem; --space-12: 3rem;
+      --space-16: 4rem;   --space-20: 5rem;
+    }
+
+    [data-theme="dark"] {
+      --bg:         #160A08;
+      --surface:    #1E0F0D;
+      --surface-2:  #2A1512;
+      --border:     #3D1E1A;
+      --divider:    #2D1614;
+      --text:       #F5DDD8;
+      --text-muted: #C09080;
+      --text-faint: #7A5550;
+      --text-inv:   #160A08;
+      --red-soft:   #3D1212;
+      --gold-light: #3D2E00;
+      --shadow-sm: 0 1px 3px oklch(0 0 0 / 0.3);
+      --shadow-md: 0 4px 16px oklch(0 0 0 / 0.4);
+      --shadow-lg: 0 12px 40px oklch(0 0 0 / 0.5);
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root:not([data-theme]) {
+        --bg: #160A08; --surface: #1E0F0D; --surface-2: #2A1512;
+        --border: #3D1E1A; --divider: #2D1614;
+        --text: #F5DDD8; --text-muted: #C09080; --text-faint: #7A5550;
+        --text-inv: #160A08; --red-soft: #3D1212; --gold-light: #3D2E00;
+        --shadow-sm: 0 1px 3px oklch(0 0 0 / 0.3);
+        --shadow-md: 0 4px 16px oklch(0 0 0 / 0.4);
+        --shadow-lg: 0 12px 40px oklch(0 0 0 / 0.5);
+      }
+    }
+
+    /* ── Reset ── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html {
+      -webkit-font-smoothing: antialiased;
+      text-rendering: optimizeLegibility;
+      scroll-behavior: smooth;
+    }
+    body {
+      min-height: 100dvh;
+      font-family: var(--font-body);
+      font-size: var(--text-base);
+      color: var(--text);
+      background: var(--bg);
+      line-height: 1.6;
+    }
+    img, svg { display: block; max-width: 100%; }
+    button { cursor: pointer; background: none; border: none; font: inherit; color: inherit; }
+    a, button, input { transition: color var(--transition), background var(--transition), border-color var(--transition), box-shadow var(--transition); }
+    :focus-visible { outline: 2px solid var(--red-main); outline-offset: 3px; border-radius: var(--radius-sm); }
+    ::selection { background: color-mix(in oklab, var(--red-main) 20%, transparent); }
+
+    /* ── Layout ── */
+    .container {
+      max-width: 1100px;
+      margin-inline: auto;
+      padding-inline: clamp(var(--space-4), 5vw, var(--space-12));
+    }
+
+    /* ── Header ── */
+    header {
+      background: var(--red-deep);
+      border-bottom: 3px solid var(--gold-main);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .header-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding-block: var(--space-4);
+      gap: var(--space-4);
+    }
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+      text-decoration: none;
+      color: #fff;
+    }
+    .logo-icon {
+      width: 40px;
+      height: 40px;
+      flex-shrink: 0;
+    }
+    .logo-text {
+      display: flex;
+      flex-direction: column;
+      line-height: 1.2;
+    }
+    .logo-title {
+      font-family: var(--font-display);
+      font-size: var(--text-lg);
+      font-weight: 900;
+      color: #fff;
+      letter-spacing: 0.05em;
+    }
+    .logo-subtitle {
+      font-size: var(--text-xs);
+      color: rgba(255,255,255,0.7);
+      letter-spacing: 0.04em;
+    }
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+    }
+    .theme-btn {
+      width: 36px;
+      height: 36px;
+      border-radius: var(--radius-full, 9999px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: rgba(255,255,255,0.8);
+      background: rgba(255,255,255,0.12);
+    }
+    .theme-btn:hover { background: rgba(255,255,255,0.22); color: #fff; }
+    .updated-badge {
+      font-size: var(--text-xs);
+      color: rgba(255,255,255,0.65);
+      padding: var(--space-1) var(--space-3);
+      background: rgba(255,255,255,0.1);
+      border-radius: var(--radius-full, 9999px);
+      border: 1px solid rgba(255,255,255,0.15);
+      white-space: nowrap;
+    }
+
+    /* ── Hero Banner ── */
+    .hero {
+      background: linear-gradient(135deg in oklab, var(--red-deep) 0%, var(--red-main) 60%, #8B0000 100%);
+      padding-block: clamp(var(--space-8), 6vw, var(--space-20));
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E") repeat;
+      pointer-events: none;
+    }
+    .hero-content { position: relative; }
+    .hero-eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-2);
+      font-size: var(--text-xs);
+      color: var(--gold-main);
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      font-weight: 700;
+      margin-bottom: var(--space-4);
+    }
+    .hero-eyebrow span { width: 24px; height: 1px; background: var(--gold-main); display: block; }
+    .hero h1 {
+      font-family: var(--font-display);
+      font-size: var(--text-2xl);
+      font-weight: 900;
+      color: #fff;
+      line-height: 1.15;
+      margin-bottom: var(--space-4);
+      text-shadow: 0 2px 12px rgba(0,0,0,0.3);
+    }
+    .hero-desc {
+      font-size: var(--text-base);
+      color: rgba(255,255,255,0.8);
+      max-width: 48ch;
+      margin-inline: auto;
+    }
+
+    /* ── Check Tool ── */
+    .check-section {
+      padding-block: clamp(var(--space-8), 5vw, var(--space-16));
+      background: var(--surface-2);
+      border-bottom: 1px solid var(--border);
+    }
+    .check-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-xl);
+      padding: clamp(var(--space-6), 4vw, var(--space-10));
+      box-shadow: var(--shadow-md);
+      max-width: 680px;
+      margin-inline: auto;
+    }
+    .check-title {
+      font-family: var(--font-display);
+      font-size: var(--text-lg);
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: var(--space-2);
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+    }
+    .check-title svg { color: var(--red-main); flex-shrink: 0; }
+    .check-desc {
+      font-size: var(--text-sm);
+      color: var(--text-muted);
+      margin-bottom: var(--space-6);
+    }
+    .input-row {
+      display: flex;
+      gap: var(--space-3);
+      flex-wrap: wrap;
+    }
+    .invoice-input {
+      flex: 1;
+      min-width: 180px;
+      padding: var(--space-3) var(--space-4);
+      font-size: var(--text-base);
+      font-family: 'Courier New', monospace;
+      letter-spacing: 0.15em;
+      font-weight: 700;
+      border: 2px solid var(--border);
+      border-radius: var(--radius-md);
+      background: var(--bg);
+      color: var(--text);
+      text-transform: uppercase;
+    }
+    .invoice-input:focus {
+      outline: none;
+      border-color: var(--red-main);
+      background: var(--surface);
+    }
+    .invoice-input::placeholder {
+      color: var(--text-faint);
+      letter-spacing: 0.05em;
+      font-weight: 400;
+    }
+    .check-btn {
+      padding: var(--space-3) var(--space-8);
+      background: var(--red-main);
+      color: #fff;
+      font-weight: 700;
+      font-size: var(--text-sm);
+      border-radius: var(--radius-md);
+      white-space: nowrap;
+      letter-spacing: 0.05em;
+    }
+    .check-btn:hover { background: var(--red-deep); transform: translateY(-1px); box-shadow: var(--shadow-md); }
+    .check-btn:active { transform: translateY(0); }
+    .check-result {
+      margin-top: var(--space-6);
+      display: none;
+      animation: fadeSlideIn 0.3s ease;
+    }
+    .check-result.visible { display: block; }
+    @keyframes fadeSlideIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .result-card {
+      border-radius: var(--radius-lg);
+      padding: var(--space-6);
+      display: flex;
+      align-items: flex-start;
+      gap: var(--space-4);
+    }
+    .result-card.win {
+      background: linear-gradient(135deg, #fff8e1, #fff3cd);
+      border: 2px solid var(--gold-main);
+    }
+    [data-theme="dark"] .result-card.win {
+      background: linear-gradient(135deg, #2a2000, #1e1800);
+      border-color: var(--gold-main);
+    }
+    .result-card.nowin {
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+    }
+    .result-card.error {
+      background: var(--red-soft);
+      border: 1px solid var(--red-main);
+    }
+    [data-theme="dark"] .result-card.error {
+      background: #2A0A0A;
+    }
+    .result-icon { font-size: 2rem; flex-shrink: 0; line-height: 1; }
+    .result-body {}
+    .result-prize {
+      font-family: var(--font-display);
+      font-size: var(--text-lg);
+      font-weight: 900;
+      color: var(--gold-dark);
+      margin-bottom: var(--space-1);
+    }
+    [data-theme="dark"] .result-prize { color: var(--gold-main); }
+    .result-prize.nowin { color: var(--text-muted); font-size: var(--text-base); }
+    .result-detail { font-size: var(--text-sm); color: var(--text-muted); }
+
+    /* ── Periods Grid ── */
+    .periods-section {
+      padding-block: clamp(var(--space-10), 6vw, var(--space-20));
+    }
+    .section-header {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: var(--space-4);
+      margin-bottom: var(--space-8);
+      flex-wrap: wrap;
+    }
+    .section-title {
+      font-family: var(--font-display);
+      font-size: var(--text-xl);
+      font-weight: 900;
+      color: var(--text);
+    }
+    .section-title span { color: var(--red-main); }
+    .period-label {
+      font-size: var(--text-sm);
+      color: var(--text-muted);
+    }
+    .periods-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(min(340px, 100%), 1fr));
+      gap: var(--space-6);
+    }
+
+    /* ── Period Card ── */
+    .period-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-xl);
+      overflow: hidden;
+      box-shadow: var(--shadow-sm);
+      transition: box-shadow var(--transition), transform var(--transition);
+      position: relative;
+    }
+    .period-card:hover { box-shadow: var(--shadow-lg); transform: translateY(-3px); }
+    .period-card.latest {
+      border-color: var(--gold-main);
+      box-shadow: 0 0 0 2px color-mix(in oklab, var(--gold-main) 30%, transparent), var(--shadow-md);
+    }
+    .card-header {
+      background: var(--red-deep);
+      padding: var(--space-5) var(--space-6);
+      position: relative;
+      overflow: hidden;
+    }
+    .card-header::after {
+      content: '';
+      position: absolute;
+      top: -20px; right: -20px;
+      width: 80px; height: 80px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.05);
+    }
+    .period-card.latest .card-header { background: linear-gradient(135deg, var(--red-deep), var(--red-main)); }
+    .latest-badge {
+      position: absolute;
+      top: var(--space-3);
+      right: var(--space-4);
+      background: var(--gold-main);
+      color: var(--gold-dark);
+      font-size: var(--text-xs);
+      font-weight: 900;
+      padding: 2px var(--space-3);
+      border-radius: var(--radius-full, 9999px);
+      letter-spacing: 0.05em;
+    }
+    .card-period {
+      font-family: var(--font-display);
+      font-size: var(--text-lg);
+      font-weight: 900;
+      color: #fff;
+      margin-bottom: var(--space-1);
+    }
+    .card-claim {
+      font-size: var(--text-xs);
+      color: rgba(255,255,255,0.65);
+    }
+    .card-body {
+      padding: var(--space-5) var(--space-6);
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-4);
+    }
+    .prize-row {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-2);
+    }
+    .prize-row + .prize-row {
+      padding-top: var(--space-4);
+      border-top: 1px solid var(--divider);
+    }
+    .prize-meta {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--space-2);
+    }
+    .prize-name {
+      font-size: var(--text-sm);
+      font-weight: 700;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+    }
+    .prize-dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .prize-dot.super  { background: var(--gold-main); }
+    .prize-dot.special { background: var(--red-main); }
+    .prize-dot.first  { background: #1565C0; }
+    .prize-dot.extra  { background: #4CAF50; }
+    .prize-amount {
+      font-size: var(--text-xs);
+      color: var(--text-faint);
+      font-weight: 500;
+    }
+    .prize-numbers {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-2);
+    }
+    .number-chip {
+      font-family: 'Courier New', 'Courier', monospace;
+      font-size: var(--text-base);
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      padding: var(--space-2) var(--space-4);
+      border-radius: var(--radius-md);
+      border: 1.5px solid;
+      line-height: 1.4;
+    }
+    .number-chip.super {
+      background: linear-gradient(135deg, #fff8e1, #fff3cd);
+      border-color: var(--gold-main);
+      color: var(--gold-dark);
+    }
+    [data-theme="dark"] .number-chip.super {
+      background: linear-gradient(135deg, #2A2000, #1E1600);
+      color: #F5C518;
+      border-color: #C8920A;
+    }
+    .number-chip.special {
+      background: var(--red-soft);
+      border-color: color-mix(in oklab, var(--red-main) 50%, transparent);
+      color: var(--red-deep);
+    }
+    [data-theme="dark"] .number-chip.special {
+      background: #2A0808;
+      color: #FF8A80;
+      border-color: #8B1A1A;
+    }
+    .number-chip.first {
+      background: #E3F2FD;
+      border-color: #90CAF9;
+      color: #0D47A1;
+    }
+    [data-theme="dark"] .number-chip.first {
+      background: #0A1A2E;
+      color: #82B1FF;
+      border-color: #1A3A6E;
+    }
+    .number-chip.extra {
+      background: #E8F5E9;
+      border-color: #A5D6A7;
+      color: #1B5E20;
+      font-size: var(--text-sm);
+      padding: var(--space-1) var(--space-3);
+    }
+    [data-theme="dark"] .number-chip.extra {
+      background: #0A1E0A;
+      color: #69F0AE;
+      border-color: #1A5E1A;
+    }
+    .prize-note {
+      font-size: var(--text-xs);
+      color: var(--text-faint);
+      line-height: 1.5;
+    }
+
+    /* ── How To Check Guide ── */
+    .guide-section {
+      padding-block: clamp(var(--space-8), 5vw, var(--space-16));
+      background: var(--surface-2);
+      border-top: 1px solid var(--border);
+    }
+    .guide-title {
+      font-family: var(--font-display);
+      font-size: var(--text-xl);
+      font-weight: 900;
+      color: var(--text);
+      margin-bottom: var(--space-8);
+      text-align: center;
+    }
+    .guide-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(min(220px, 100%), 1fr));
+      gap: var(--space-5);
+    }
+    .guide-item {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: var(--space-6);
+      text-align: center;
+      box-shadow: var(--shadow-sm);
+    }
+    .guide-rank {
+      width: 48px; height: 48px;
+      border-radius: 50%;
+      background: var(--red-main);
+      color: #fff;
+      font-family: var(--font-display);
+      font-size: var(--text-lg);
+      font-weight: 900;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto var(--space-4);
+    }
+    .guide-name {
+      font-size: var(--text-sm);
+      font-weight: 700;
+      color: var(--red-main);
+      margin-bottom: var(--space-2);
+    }
+    .guide-rule {
+      font-size: var(--text-xs);
+      color: var(--text-muted);
+      line-height: 1.6;
+    }
+    .guide-prize {
+      display: inline-block;
+      margin-top: var(--space-3);
+      font-size: var(--text-sm);
+      font-weight: 700;
+      color: var(--gold-dark);
+      background: var(--gold-light);
+      padding: var(--space-1) var(--space-3);
+      border-radius: var(--radius-full, 9999px);
+    }
+    [data-theme="dark"] .guide-prize { color: var(--gold-main); background: var(--gold-light); }
+
+    /* ── Footer ── */
+    footer {
+      background: var(--red-deep);
+      border-top: 3px solid var(--gold-main);
+      padding-block: var(--space-8);
+      color: rgba(255,255,255,0.7);
+      text-align: center;
+    }
+    .footer-logo {
+      font-family: var(--font-display);
+      font-size: var(--text-base);
+      font-weight: 700;
+      color: rgba(255,255,255,0.9);
+      margin-bottom: var(--space-2);
+    }
+    .footer-links {
+      display: flex;
+      justify-content: center;
+      gap: var(--space-6);
+      flex-wrap: wrap;
+      margin-block: var(--space-4);
+    }
+    .footer-links a {
+      font-size: var(--text-xs);
+      color: rgba(255,255,255,0.6);
+      text-decoration: none;
+    }
+    .footer-links a:hover { color: var(--gold-main); }
+    .footer-note { font-size: var(--text-xs); color: rgba(255,255,255,0.4); }
+
+    /* ── Loading State ── */
+    .loading-skeleton {
+      background: linear-gradient(90deg, var(--border) 25%, var(--divider) 50%, var(--border) 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.5s infinite;
+      border-radius: var(--radius-sm);
+    }
+    @keyframes shimmer {
+      from { background-position: 200% 0; }
+      to   { background-position: -200% 0; }
+    }
+
+    /* ── Responsive ── */
+    @media (max-width: 640px) {
+      .header-inner { gap: var(--space-2); }
+      .updated-badge { display: none; }
+      .logo-subtitle { display: none; }
+      .input-row { flex-direction: column; }
+      .check-btn { width: 100%; justify-content: center; display: flex; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── Header ── -->
+<header>
+  <div class="container">
+    <div class="header-inner">
+      <a href="#" class="logo">
+        <!-- SVG Logo -->
+        <svg class="logo-icon" viewBox="0 0 40 40" fill="none" aria-label="發票獎號Logo">
+          <rect width="40" height="40" rx="8" fill="#C62828"/>
+          <rect x="4" y="4" width="32" height="32" rx="6" fill="none" stroke="#D4A017" stroke-width="1.5" opacity="0.6"/>
+          <!-- Receipt lines -->
+          <rect x="10" y="11" width="20" height="2.5" rx="1.25" fill="white" opacity="0.9"/>
+          <rect x="10" y="16" width="14" height="2" rx="1" fill="white" opacity="0.6"/>
+          <rect x="10" y="20" width="17" height="2" rx="1" fill="white" opacity="0.6"/>
+          <!-- Star/prize symbol -->
+          <circle cx="27" cy="27" r="6" fill="#D4A017"/>
+          <text x="27" y="31" text-anchor="middle" font-size="9" font-weight="900" fill="#7C5A00">★</text>
+        </svg>
+        <div class="logo-text">
+          <span class="logo-title">統一發票對號</span>
+          <span class="logo-subtitle">中華民國財政部</span>
+        </div>
+      </a>
+      <div class="header-actions">
+        <span class="updated-badge" id="updated-at">載入中…</span>
+        <button class="theme-btn" data-theme-toggle aria-label="切換深淺色模式">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- ── Hero ── -->
+<section class="hero">
+  <div class="container">
+    <div class="hero-content">
+      <div class="hero-eyebrow">
+        <span></span>
+        Taiwan Uniform Invoice Lottery
+        <span></span>
+      </div>
+      <h1>統一發票<br>中獎號碼查詢</h1>
+      <p class="hero-desc">每兩個月開獎一次，快速查詢最近三期中獎號碼，別讓中獎發票過期失效！</p>
+    </div>
+  </div>
+</section>
+
+<!-- ── Quick Check Tool ── -->
+<section class="check-section">
+  <div class="container">
+    <div class="check-card">
+      <h2 class="check-title">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+        </svg>
+        快速對獎
+      </h2>
+      <p class="check-desc">輸入你的發票末8碼（英文字軌不用輸），自動比對最新一期所有獎項</p>
+      <div class="input-row">
+        <input
+          type="text"
+          class="invoice-input"
+          id="invoice-number"
+          placeholder="例：12345678"
+          maxlength="8"
+          pattern="[0-9]{8}"
+          inputmode="numeric"
+          autocomplete="off"
+        />
+        <button class="check-btn" id="check-btn" onclick="checkInvoice()">對獎</button>
+      </div>
+      <div class="check-result" id="check-result"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ── Periods Grid ── -->
+<main class="periods-section">
+  <div class="container">
+    <div class="section-header">
+      <h2 class="section-title">最近 <span>三期</span> 中獎號碼</h2>
+      <span class="period-label">雙數月25日開獎 · 領獎期限3個月</span>
+    </div>
+    <div class="periods-grid" id="periods-grid">
+      <!-- Skeleton loading -->
+      <div class="period-card">
+        <div class="card-header" style="height:80px;" class="loading-skeleton"></div>
+        <div class="card-body" style="gap:1rem;">
+          <div class="loading-skeleton" style="height:24px;border-radius:4px;"></div>
+          <div class="loading-skeleton" style="height:40px;border-radius:8px;"></div>
+          <div class="loading-skeleton" style="height:24px;border-radius:4px;"></div>
+          <div class="loading-skeleton" style="height:70px;border-radius:8px;"></div>
+        </div>
+      </div>
+      <div class="period-card">
+        <div class="card-header" style="height:80px;"></div>
+        <div class="card-body">
+          <div class="loading-skeleton" style="height:24px;border-radius:4px;"></div>
+          <div class="loading-skeleton" style="height:40px;border-radius:8px;"></div>
+        </div>
+      </div>
+      <div class="period-card">
+        <div class="card-header" style="height:80px;"></div>
+        <div class="card-body">
+          <div class="loading-skeleton" style="height:24px;border-radius:4px;"></div>
+          <div class="loading-skeleton" style="height:40px;border-radius:8px;"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<!-- ── Prize Guide ── -->
+<section class="guide-section">
+  <div class="container">
+    <h2 class="guide-title">對獎規則說明</h2>
+    <div class="guide-grid">
+      <div class="guide-item">
+        <div class="guide-rank" style="background:var(--gold-main); color: var(--gold-dark);">特</div>
+        <div class="guide-name">特別獎</div>
+        <div class="guide-rule">發票末8碼與特別獎號碼完全相同</div>
+        <div class="guide-prize">1,000 萬元</div>
+      </div>
+      <div class="guide-item">
+        <div class="guide-rank">特</div>
+        <div class="guide-name">特獎</div>
+        <div class="guide-rule">發票末8碼與特獎號碼完全相同</div>
+        <div class="guide-prize">200 萬元</div>
+      </div>
+      <div class="guide-item">
+        <div class="guide-rank">頭</div>
+        <div class="guide-name">頭獎</div>
+        <div class="guide-rule">發票末8碼與頭獎號碼完全相同</div>
+        <div class="guide-prize">20 萬元</div>
+      </div>
+      <div class="guide-item">
+        <div class="guide-rank" style="background:#1565C0;">二</div>
+        <div class="guide-name">二獎</div>
+        <div class="guide-rule">發票末7碼與頭獎號碼末7碼相同</div>
+        <div class="guide-prize">4 萬元</div>
+      </div>
+      <div class="guide-item">
+        <div class="guide-rank" style="background:#1565C0;">三</div>
+        <div class="guide-name">三獎</div>
+        <div class="guide-rule">發票末6碼與頭獎號碼末6碼相同</div>
+        <div class="guide-prize">1 萬元</div>
+      </div>
+      <div class="guide-item">
+        <div class="guide-rank" style="background:#1565C0;">四</div>
+        <div class="guide-name">四獎</div>
+        <div class="guide-rule">發票末5碼與頭獎號碼末5碼相同</div>
+        <div class="guide-prize">4,000 元</div>
+      </div>
+      <div class="guide-item">
+        <div class="guide-rank" style="background:#1565C0;">五</div>
+        <div class="guide-name">五獎</div>
+        <div class="guide-rule">發票末4碼與頭獎號碼末4碼相同</div>
+        <div class="guide-prize">1,000 元</div>
+      </div>
+      <div class="guide-item">
+        <div class="guide-rank" style="background:#1565C0;">六</div>
+        <div class="guide-name">六獎</div>
+        <div class="guide-rule">發票末3碼與頭獎號碼末3碼相同</div>
+        <div class="guide-prize">200 元</div>
+      </div>
+      <div class="guide-item">
+        <div class="guide-rank" style="background:#4CAF50;">增</div>
+        <div class="guide-name">增開六獎</div>
+        <div class="guide-rule">發票末3碼與增開六獎號碼相同</div>
+        <div class="guide-prize">200 元</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── Footer ── -->
+<footer>
+  <div class="container">
+    <div class="footer-logo">統一發票中獎號碼查詢</div>
+    <div class="footer-links">
+      <a href="https://www.etax.nat.gov.tw" target="_blank" rel="noopener">財政部稅務入口網</a>
+      <a href="https://www.einvoice.nat.gov.tw" target="_blank" rel="noopener">電子發票整合服務平台</a>
+      <a href="https://www.dot.gov.tw" target="_blank" rel="noopener">財政部賦稅署</a>
+    </div>
+    <p class="footer-note">資料來源：中華民國財政部賦稅署 · 本網站為非官方資訊整理，實際以財政部公告為準</p>
+  </div>
+</footer>
+
+<script>
+// ── Theme Toggle ──
+(function () {
+  const btn = document.querySelector('[data-theme-toggle]');
+  const root = document.documentElement;
+  const prefersDark = matchMedia('(prefers-color-scheme:dark)').matches;
+  let theme = prefersDark ? 'dark' : 'light';
+  root.setAttribute('data-theme', theme);
+  updateThemeIcon();
+
+  btn && btn.addEventListener('click', () => {
+    theme = theme === 'dark' ? 'light' : 'dark';
+    root.setAttribute('data-theme', theme);
+    updateThemeIcon();
+  });
+
+  function updateThemeIcon() {
+    if (!btn) return;
+    btn.innerHTML = theme === 'dark'
+      ? '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>'
+      : '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>';
+    btn.setAttribute('aria-label', `切換至${theme === 'dark' ? '亮色' : '深色'}模式`);
+  }
+})();
+
+// ── Lottery Data ──
+let lotteryData = null;
+
+function formatAmount(n) {
+  if (n >= 10000000) return '1,000 萬元';
+  if (n >= 2000000)  return '200 萬元';
+  if (n >= 200000)   return '20 萬元';
+  if (n >= 40000)    return '4 萬元';
+  if (n >= 10000)    return '1 萬元';
+  if (n >= 4000)     return '4,000 元';
+  if (n >= 1000)     return '1,000 元';
+  return '200 元';
+}
+
+function formatDate(str) {
+  if (!str) return '';
+  const [y, m, d] = str.split('-');
+  const roc = parseInt(y) - 1911;
+  return `${roc}年${parseInt(m)}月${parseInt(d)}日`;
+}
+
+function renderPeriodCard(period, index) {
+  const { prizes } = period;
+  const isLatest = index === 0;
+  const claimEnd = period.claim_end ? formatDate(period.claim_end) : '';
+
+  const superNums  = prizes.super?.numbers  || [];
+  const specialNums = prizes.special?.numbers || [];
+  const firstNums  = prizes.first?.numbers  || [];
+  const extraNums  = prizes.sixth_extra?.numbers || [];
+
+  return `
+    <article class="period-card${isLatest ? ' latest' : ''}">
+      <div class="card-header">
+        ${isLatest ? '<span class="latest-badge">最新一期</span>' : ''}
+        <div class="card-period">${period.period}統一發票</div>
+        ${claimEnd ? `<div class="card-claim">領獎截止：${claimEnd}</div>` : ''}
+      </div>
+      <div class="card-body">
+
+        <!-- 特別獎 -->
+        <div class="prize-row">
+          <div class="prize-meta">
+            <span class="prize-name"><span class="prize-dot super"></span>特別獎</span>
+            <span class="prize-amount">1,000萬元｜末8碼完全相同</span>
+          </div>
+          <div class="prize-numbers">
+            ${superNums.map(n => `<span class="number-chip super">${n}</span>`).join('')}
+          </div>
+        </div>
+
+        <!-- 特獎 -->
+        <div class="prize-row">
+          <div class="prize-meta">
+            <span class="prize-name"><span class="prize-dot special"></span>特獎</span>
+            <span class="prize-amount">200萬元｜末8碼完全相同</span>
+          </div>
+          <div class="prize-numbers">
+            ${specialNums.map(n => `<span class="number-chip special">${n}</span>`).join('')}
+          </div>
+        </div>
+
+        <!-- 頭獎 -->
+        <div class="prize-row">
+          <div class="prize-meta">
+            <span class="prize-name"><span class="prize-dot first"></span>頭獎</span>
+            <span class="prize-amount">20萬～200元｜末2-8碼</span>
+          </div>
+          <div class="prize-numbers">
+            ${firstNums.map(n => `<span class="number-chip first">${n}</span>`).join('')}
+          </div>
+          <div class="prize-note">二獎末7碼・三獎末6碼・四獎末5碼・五獎末4碼・六獎末3碼</div>
+        </div>
+
+        <!-- 增開六獎 -->
+        ${extraNums.length ? `
+        <div class="prize-row">
+          <div class="prize-meta">
+            <span class="prize-name"><span class="prize-dot extra"></span>增開六獎</span>
+            <span class="prize-amount">200元｜末3碼相同</span>
+          </div>
+          <div class="prize-numbers">
+            ${extraNums.map(n => `<span class="number-chip extra">${n}</span>`).join('')}
+          </div>
+        </div>
+        ` : ''}
+
+      </div>
+    </article>
+  `;
+}
+
+async function loadData() {
+  try {
+    const resp = await fetch('./data/lottery.json?t=' + Date.now());
+    lotteryData = await resp.json();
+
+    // Updated badge
+    const updatedEl = document.getElementById('updated-at');
+    if (lotteryData.updated_at) {
+      const d = new Date(lotteryData.updated_at);
+      const roc = d.getFullYear() - 1911;
+      updatedEl.textContent = `更新：${roc}年${d.getMonth()+1}月${d.getDate()}日`;
+    }
+
+    // Render cards
+    const grid = document.getElementById('periods-grid');
+    if (lotteryData.periods && lotteryData.periods.length) {
+      grid.innerHTML = lotteryData.periods
+        .map((p, i) => renderPeriodCard(p, i))
+        .join('');
+    }
+  } catch (e) {
+    console.error('Failed to load lottery data:', e);
+    document.getElementById('periods-grid').innerHTML =
+      '<p style="color:var(--text-muted);padding:2rem;">資料載入失敗，請重新整理頁面</p>';
+  }
+}
+
+// ── Invoice Check ──
+function checkInvoice() {
+  const input = document.getElementById('invoice-number').value.trim().replace(/[^0-9]/g, '');
+  const resultEl = document.getElementById('check-result');
+
+  if (input.length !== 8) {
+    resultEl.innerHTML = `<div class="result-card error"><span class="result-icon">⚠️</span><div class="result-body"><div class="result-prize nowin">請輸入正確的8位數字</div><div class="result-detail">發票號碼末8碼為純數字，例如：12345678</div></div></div>`;
+    resultEl.classList.add('visible');
+    return;
+  }
+  if (!lotteryData || !lotteryData.periods) {
+    resultEl.innerHTML = `<div class="result-card error"><span class="result-icon">⚠️</span><div class="result-body"><div class="result-prize nowin">資料尚未載入</div></div></div>`;
+    resultEl.classList.add('visible');
+    return;
+  }
+
+  // Check latest period only
+  const period = lotteryData.periods[0];
+  const { prizes } = period;
+  let winResult = null;
+
+  const s = prizes.super?.numbers || [];
+  const sp = prizes.special?.numbers || [];
+  const f = prizes.first?.numbers || [];
+  const ex = prizes.sixth_extra?.numbers || [];
+
+  if (s.includes(input)) {
+    winResult = { prize: '特別獎', amount: '1,000萬元', detail: '恭喜！8碼完全符合特別獎！' };
+  } else if (sp.includes(input)) {
+    winResult = { prize: '特獎', amount: '200萬元', detail: '恭喜！8碼完全符合特獎！' };
+  } else {
+    for (const fn of f) {
+      if (input === fn) { winResult = { prize: '頭獎', amount: '20萬元', detail: `符合頭獎號碼 ${fn}` }; break; }
+      if (input.slice(-7) === fn.slice(-7)) { winResult = { prize: '二獎', amount: '4萬元', detail: `末7碼符合頭獎 ${fn}` }; break; }
+      if (input.slice(-6) === fn.slice(-6)) { winResult = { prize: '三獎', amount: '1萬元', detail: `末6碼符合頭獎 ${fn}` }; break; }
+      if (input.slice(-5) === fn.slice(-5)) { winResult = { prize: '四獎', amount: '4,000元', detail: `末5碼符合頭獎 ${fn}` }; break; }
+      if (input.slice(-4) === fn.slice(-4)) { winResult = { prize: '五獎', amount: '1,000元', detail: `末4碼符合頭獎 ${fn}` }; break; }
+      if (input.slice(-3) === fn.slice(-3)) { winResult = { prize: '六獎', amount: '200元', detail: `末3碼符合頭獎 ${fn}` }; break; }
+    }
+    if (!winResult) {
+      for (const en of ex) {
+        if (input.slice(-3) === en) {
+          winResult = { prize: '增開六獎', amount: '200元', detail: `末3碼 ${en} 符合增開六獎` };
+          break;
+        }
+      }
+    }
+  }
+
+  if (winResult) {
+    resultEl.innerHTML = `
+      <div class="result-card win">
+        <span class="result-icon">🎉</span>
+        <div class="result-body">
+          <div class="result-prize">恭喜中獎！${winResult.prize} ${winResult.amount}</div>
+          <div class="result-detail">${winResult.detail}（${period.period}）</div>
+          ${period.claim_end ? `<div class="result-detail" style="margin-top:4px;">領獎截止：${formatDate(period.claim_end)}</div>` : ''}
+        </div>
+      </div>`;
+  } else {
+    resultEl.innerHTML = `
+      <div class="result-card nowin">
+        <span class="result-icon">😔</span>
+        <div class="result-body">
+          <div class="result-prize nowin">未中獎（${period.period}）</div>
+          <div class="result-detail">此號碼在最新一期未符合任何獎項，別氣餒！</div>
+        </div>
+      </div>`;
+  }
+  resultEl.classList.add('visible');
+}
+
+// Enter key support
+document.getElementById('invoice-number').addEventListener('keydown', e => {
+  if (e.key === 'Enter') checkInvoice();
+  // Only allow digits
+  if (!/[0-9]|Backspace|Tab|ArrowLeft|ArrowRight|Delete/.test(e.key)) e.preventDefault();
+});
+
+// Load data on page ready
+loadData();
+</script>
+</body>
+</html>

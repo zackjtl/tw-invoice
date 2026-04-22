@@ -1,0 +1,92 @@
+{
+  "updated_at": "2026-04-22T20:00:00+08:00",
+  "periods": [
+    {
+      "period": "115年1-2月",
+      "year_month": "11501",
+      "announce_date": "2026-03-25",
+      "claim_start": "2026-04-06",
+      "claim_end": "2026-07-06",
+      "prizes": {
+        "super": {
+          "name": "特別獎",
+          "amount": 10000000,
+          "numbers": ["87510041"]
+        },
+        "special": {
+          "name": "特獎",
+          "amount": 2000000,
+          "numbers": ["32220522"]
+        },
+        "first": {
+          "name": "頭獎",
+          "amount": 200000,
+          "numbers": ["26649927", "59565539", "11460822"]
+        },
+        "sixth_extra": {
+          "name": "增開六獎",
+          "amount": 200,
+          "numbers": ["927", "539", "822"]
+        }
+      }
+    },
+    {
+      "period": "114年11-12月",
+      "year_month": "11411",
+      "announce_date": "2026-01-25",
+      "claim_start": "2026-02-06",
+      "claim_end": "2026-05-06",
+      "prizes": {
+        "super": {
+          "name": "特別獎",
+          "amount": 10000000,
+          "numbers": ["97023797"]
+        },
+        "special": {
+          "name": "特獎",
+          "amount": 2000000,
+          "numbers": ["00507588"]
+        },
+        "first": {
+          "name": "頭獎",
+          "amount": 200000,
+          "numbers": ["92377231", "05232592", "78125249"]
+        },
+        "sixth_extra": {
+          "name": "增開六獎",
+          "amount": 200,
+          "numbers": ["231", "592", "249"]
+        }
+      }
+    },
+    {
+      "period": "114年9-10月",
+      "year_month": "11409",
+      "announce_date": "2025-11-25",
+      "claim_start": "2025-12-06",
+      "claim_end": "2026-03-06",
+      "prizes": {
+        "super": {
+          "name": "特別獎",
+          "amount": 10000000,
+          "numbers": ["28630525"]
+        },
+        "special": {
+          "name": "特獎",
+          "amount": 2000000,
+          "numbers": ["90028580"]
+        },
+        "first": {
+          "name": "頭獎",
+          "amount": 200000,
+          "numbers": ["41016094", "98081574", "07309261"]
+        },
+        "sixth_extra": {
+          "name": "增開六獎",
+          "amount": 200,
+          "numbers": ["094", "574", "261"]
+        }
+      }
+    }
+  ]
+}
