@@ -1148,12 +1148,12 @@ function checkInvoice() {
       <div class="result-card win" style="margin-bottom:0.5rem;">
         <span class="result-icon">🎉</span>
         <div class="result-body">
-          <div class="result-prize">恭喜！${result.prize} ${result.amount}</div>
-          <div class="result-detail">${result.detail}（${period.period}）</div>
+          <div class="result-prize">您可能對中 ${period.period} ${result.prize} ${result.amount}</div>
+          <div class="result-detail">${result.detail}，請核對發票日期確認期別</div>
           ${period.claim_end ? `<div class="result-detail" style="margin-top:4px;">領獎截止：${formatDate(period.claim_end)}</div>` : ''}
         </div>
       </div>`).join('');
-    const hint = hits.length > 1 ? `<div class="result-detail" style="color:var(--accent);margin-bottom:0.5rem;">此號碼在 ${hits.length} 期中均可能中獎，請核對發票日期！</div>` : '';
+    const hint = hits.length > 1 ? `<div class="result-detail" style="color:var(--accent);margin-bottom:0.5rem;">此號碼在 ${hits.length} 期均有符合獎項，請核對發票日期確認是哪一期！</div>` : '';
     resultEl.innerHTML = hint + cards;
   } else {
     const periodRange = lotteryData.periods.map(p => p.period).join('、');
