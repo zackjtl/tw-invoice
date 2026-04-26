@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-04-22T20:43:00+08:00",
+  "updated_at": "2026-04-27T01:18:43.375401+08:00",
   "periods": [
     {
       "period": "115年1-2月",
@@ -13,17 +13,25 @@
         "super": {
           "name": "特別獎",
           "amount": 10000000,
-          "numbers": ["87510041"]
+          "numbers": [
+            "87510041"
+          ]
         },
         "special": {
           "name": "特獎",
           "amount": 2000000,
-          "numbers": ["32220522"]
+          "numbers": [
+            "32220522"
+          ]
         },
         "first": {
           "name": "頭獎",
           "amount": 200000,
-          "numbers": ["21677046", "44662410", "31262513"]
+          "numbers": [
+            "21677046",
+            "44662410",
+            "31262513"
+          ]
         },
         "sixth_extra": {
           "name": "增開六獎",
@@ -44,48 +52,25 @@
         "super": {
           "name": "特別獎",
           "amount": 10000000,
-          "numbers": ["97023797"]
+          "numbers": [
+            "97023797"
+          ]
         },
         "special": {
           "name": "特獎",
           "amount": 2000000,
-          "numbers": ["00507588"]
+          "numbers": [
+            "00507588"
+          ]
         },
         "first": {
           "name": "頭獎",
           "amount": 200000,
-          "numbers": ["92377231", "05232592", "78125249"]
-        },
-        "sixth_extra": {
-          "name": "增開六獎",
-          "amount": 200,
-          "numbers": []
-        }
-      }
-    },
-    {
-      "period": "114年9-10月",
-      "year_month": "11409",
-      "announce_date": "2025-11-25",
-      "claim_start": "2025-12-06",
-      "claim_end": "2026-03-05",
-      "source_url": "https://www.etax.nat.gov.tw/etwmain/ETW183W2_11409/",
-      "source_label": "財政部稅務入口網",
-      "prizes": {
-        "super": {
-          "name": "特別獎",
-          "amount": 10000000,
-          "numbers": ["28630525"]
-        },
-        "special": {
-          "name": "特獎",
-          "amount": 2000000,
-          "numbers": ["90028580"]
-        },
-        "first": {
-          "name": "頭獎",
-          "amount": 200000,
-          "numbers": ["41016094", "98081574", "07309261"]
+          "numbers": [
+            "92377231",
+            "05232592",
+            "78125249"
+          ]
         },
         "sixth_extra": {
           "name": "增開六獎",
